@@ -3,48 +3,43 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class MiningManager {
-    private OutputManager output;
+    private final OutputManager output;
     private String previousHash;
     private int leadingZeros;
-    private String pseudonym;
-    public MiningManager (String previousHash, String pseudonym, OutputManager output) {
+    private final MiningCommunication mc;
+    private final String threadName;
+
+    public MiningManager (String previousHash, String pseudonym, OutputManager output, MiningCommunication mc, String threadName) {
         this.output = output;
         this.previousHash = previousHash;
         this.leadingZeros = calculateLeadingZeros(previousHash);
-        this.pseudonym = pseudonym;
-        output.log("Mining Manager Started with previous hash: " + this.previousHash);
-        output.log("Mining Manager Started with pseudonym: " + this.pseudonym);
-        output.log("Mining Manager Started with leading zeros: " + leadingZeros);
+        this.mc = mc;
+        if (mc != null) { mc.setLeadingZeros(this.leadingZeros, threadName); }
+
+        this.threadName = threadName;
+        System.out.println("From MiningManager - Initial Hash: " + previousHash + " | Leading Zeros: " + leadingZeros +  " | Thread: " + threadName);
         try {
-            while (leadingZeros < 100) { mine(this.previousHash+pseudonym+(int)(Math.random() * 100000)); }
+            while (leadingZeros < 50) { mineNoLoggingWithThreading(this.previousHash+pseudonym+(int)(Math.random() * 100000000)); }
         } catch (Exception e) {
-            output.log("Error: Mining Failed - " + e.getMessage());
+            System.out.println("Error: Mining Failed - " + e.getMessage());
         }
+
     }
-    private void mine (String text) throws NoSuchAlgorithmException {
-        output.log("//////////////////////////////////");
-        output.log("############ NEW MINE ############");
-        output.log("############ CURRENT LEADING ZEROS: " + leadingZeros);
-        output.log("############ PREVIOUS HASH: " + previousHash);
-        output.log("############ INPUT TEXT: " + text);
+    private void mineNoLoggingWithThreading (String text) throws NoSuchAlgorithmException {
         MessageDigest sha = MessageDigest.getInstance("SHA-256");
         sha.update(text.getBytes());
         byte[] bin = sha.digest();
-        output.log("############ OUTPUT HASH (Binary): " + byteArrayString(bin));
         String hex = byteArrayHex(bin);
-        output.log("############ OUTPUT HASH (Hex): " + byteArrayHex(bin));
         int zeros = calculateLeadingZeros(hex);
-        output.log("############ OUTPUT LEADING ZEROS: " + zeros);
         if (zeros > leadingZeros) {
             output.block(text);
-            output.log("############ OUTPUT IS A NEW BLOCK! ADDED TO BLOCK LOG");
-            output.log("############ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-            leadingZeros = zeros;
-            previousHash = hex;
-        } else {
-            output.log("############ OUTPUT IS NOT A NEW BLOCK CONTINUING WITH: " + previousHash);
+            mc.setLeadingZeros(zeros, threadName);
+            mc.setHash(hex, threadName);
         }
+        previousHash = mc.getHash();
+        leadingZeros = mc.getLeadingZeros();
     }
+
     private int calculateLeadingZeros(String hex) {
         String binary = hexArrayBinary(hex);
         int count = 0;
@@ -54,6 +49,9 @@ public class MiningManager {
         }
         return count;
     }
+
+    ///  Conversion Helpers
+
     private String byteArrayString(byte[] arr) {
         StringBuilder s = new StringBuilder();
         for (byte b : arr) {

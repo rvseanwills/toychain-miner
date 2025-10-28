@@ -3,16 +3,14 @@ import java.io.IOException;
 import java.time.LocalDate;
 
 public class OutputManager {
-    private String logFile = "minerlog-";
-    private String blockFile = "blocks-";
     private FileOutputStream logFileOutput;
     private FileOutputStream blockFileOutput;
 
     public OutputManager (String pseudonym) {
         double rand = Math.random(); // Using to ensure file names are unique :)
-        System.out.println("!!! UNIQUE LOG NUMBER: " + rand + "!!! (So you can easily find the corresponding log files.)");
-        logFile = logFile += LocalDate.now() + "-" + rand + "." + pseudonym;
-        blockFile = blockFile += LocalDate.now() + "-" + rand + "." + pseudonym;
+        System.out.println("### UNIQUE LOG NUMBER: " + rand + "(So you can easily find the corresponding log files.) ###");
+        String logFile = "minerlog-" + (LocalDate.now() + "-" + rand + "." + pseudonym);
+        String blockFile = "blocks-" + (LocalDate.now() + "-" + rand + "." + pseudonym);
 
         try {
             logFileOutput = new FileOutputStream(logFile);
