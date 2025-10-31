@@ -14,7 +14,7 @@ public class MiningManager {
         this.previousHash = previousHash;
         this.leadingZeros = calculateLeadingZeros(previousHash);
         this.mc = mc;
-        if (mc != null) { mc.setLeadingZeros(this.leadingZeros, threadName); }
+        if (mc != null) { mc.setLeadingZeros(this.leadingZeros); }
 
         this.threadName = threadName;
         System.out.println("From MiningManager - Initial Hash: " + previousHash + " | Leading Zeros: " + leadingZeros +  " | Thread: " + threadName);
@@ -33,7 +33,7 @@ public class MiningManager {
         int zeros = calculateLeadingZeros(hex);
         if (zeros > leadingZeros) {
             output.block(text);
-            mc.setLeadingZeros(zeros, threadName);
+            mc.setLeadingZeros(zeros);
             mc.setHash(hex, threadName);
         }
         previousHash = mc.getHash();

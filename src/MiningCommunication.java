@@ -14,7 +14,7 @@ public class MiningCommunication {
         System.out.println(tName + " Has set the hash to " + hash);
     }
 
-    public void setLeadingZeros(int zeros, String tName) {
+    public void setLeadingZeros(int zeros) {
         this.leadingZeros = zeros;
     }
 

@@ -11,8 +11,13 @@ public class Main {
         System.out.println("Please Copy Your Previous Binary Hash (In Hex!): ");
         String hash = input.next();
         MiningCommunication mc = new MiningCommunication(hash);
-        for (int i = 0; i < 20; i++) {
-            MiningThread thre = new MiningThread(mc.getHash(), pseudonym, output, mc, "Thread "+i);
+        mc.setLeadingZeros(calculateLeadingZeros(hash));
+        System.out.println("Starting Zeros: " + mc.getLeadingZeros());
+        int numOfThreads = 20;
+        for (int i = 0; i < numOfThreads; i++) {
+            Long startNonce = (Long.MAX_VALUE/numOfThreads)*i;
+            Long endNonce = (i == numOfThreads-1) ? Long.MAX_VALUE : (i+1) * ((Long.MAX_VALUE/numOfThreads) -1);
+            MiningThread thre = new MiningThread(mc.getHash(), pseudonym, output, mc, "Thread "+i, startNonce, endNonce);
             thre.start();
         }
 
@@ -61,5 +66,26 @@ public class Main {
 //
 //            new MiningManager(hash, pseudonym, output, true, null, "");
        // }
+    }
+    private static int calculateLeadingZeros(String hex) {
+        String binary = hexArrayBinary(hex);
+        int count = 0;
+        for (char ch : binary.toCharArray()) {
+            if (ch != '0') return count;
+            count++;
+        }
+        return count;
+    }
+    private static String hexArrayBinary(String hex) {
+        hex = hex.toUpperCase();
+        StringBuilder binary = new StringBuilder(hex.length() * 4);
+        for (char c : hex.toCharArray()) {
+            int value = Character.digit(c, 16);
+            if (value == -1) {
+                throw new IllegalArgumentException("Invalid hex character: " + c);
+            }
+            binary.append(String.format("%4s", Integer.toBinaryString(value)).replace(' ', '0'));
+        }
+        return binary.toString();
     }
 }
