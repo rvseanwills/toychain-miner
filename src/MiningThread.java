@@ -29,14 +29,16 @@ public class MiningThread implements Runnable {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        ByteBuffer nonceBuffer = ByteBuffer.allocate(Long.BYTES); // reuseable for all nonces
+        //ByteBuffer nonceBuffer = ByteBuffer.allocate(Long.BYTES); // reuseable for all nonces
         while (mc.getLeadingZeros() < 50) {
             sha.reset(); // clear sha object
-            sha.update(mc.getHash().getBytes(StandardCharsets.UTF_8)); // add the bytes of previous hash
-            sha.update(psuedonym.getBytes(StandardCharsets.UTF_8)); // add the bytes of the psuedonym
+            //sha.update(mc.getHash().getBytes(StandardCharsets.UTF_8)); // add the bytes of previous hash
+            //sha.update(psuedonym.getBytes(StandardCharsets.UTF_8)); // add the bytes of the psuedonym
             long nonce = ThreadLocalRandom.current().nextLong();
-            nonceBuffer.clear(); // clear nonce buffer
-            sha.update(nonceBuffer.putLong(nonce).array()); // add random nonce and converts to bytes without using javas heavy string conversions. also need to find a way of caching the randoms
+            //nonceBuffer.clear(); // clear nonce buffer
+            //sha.update(nonceBuffer.putLong(nonce).array()); // add random nonce and converts to bytes without using javas heavy string conversions. also need to find a way of caching the randoms
+            String text = mc.getHash() + psuedonym + "-" + nonce;
+            sha.update(text.getBytes(StandardCharsets.UTF_8));
             byte[] bin = sha.digest(); // gets the new hash as bytes
             // Counting the zeros:
             int zeroCount = 0;
@@ -57,7 +59,7 @@ public class MiningThread implements Runnable {
                 for (byte b : bin) {
                     hex.append(String.format("%02x", b)); // convert byte to hex
                 }
-                output.block(mc.getHash()+psuedonym+nonce);
+                output.block(text);
                 mc.setHash(hex.toString(), threadName);
             }
         }
