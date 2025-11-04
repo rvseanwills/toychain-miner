@@ -147,8 +147,8 @@ public class Main {
         String hash = input.next();
         MiningCommunication mc = new MiningCommunication(hash);
         mc.setLeadingZeros(calculateLeadingZeros(hash));
-        System.out.println("Starting Zeros: " + mc.getLeadingZeros());
-        int numOfThreads = 20;
+        System.out.println("Please enter your desired thread count: ");
+        int numOfThreads = Integer.parseInt(input.next());
         for (int i = 0; i < numOfThreads; i++) {
             MiningThread thre = new MiningThread(pseudonym, output, mc, "Thread "+i);
             thre.start();
